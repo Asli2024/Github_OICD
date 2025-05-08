@@ -13,6 +13,7 @@ permissions:
 env:
   AWS_REGION: eu-west-2
   TF_VAR_region: eu-west-2
+  AWS_ACCOUNT_ID: "175798131198" # Directly provided
 
 jobs:
   plan:
@@ -26,7 +27,7 @@ jobs:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume:
+          role-to-assume: arn:aws:iam::175798131198:role/Github_Role_Demo # Direct Account ID
           aws-region: "eu-west-2"
 
       - name: Set up Terraform
