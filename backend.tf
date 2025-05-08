@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
-    bucket = "techwithaden-terraform-state"
-    key    = "vpc_custom_module/terraform.tfstate"
+    bucket = "tf-state-bucket-c687c79"
+    key    = "terraform"
     region = "eu-west-2"
   }
 }
