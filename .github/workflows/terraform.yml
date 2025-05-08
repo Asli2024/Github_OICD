@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 env:
-  AWS_REGION: variable("aws_region")
+  AWS_REGION: "eu-west-2"
 
 jobs:
   build-infra:
