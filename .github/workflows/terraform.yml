@@ -53,8 +53,11 @@ jobs:
         id: apply
         run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars"
 
-      - name: Run tfsec
-        id: tfsec
+      - name: Install tfsec
         run: |
-          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install.sh | bash
-          tfsec .
+          wget https://github.com/aquasecurity/tfsec/releases/download/v1.28.3/tfsec-linux-amd64
+          chmod +x tfsec-linux-amd64
+          mv tfsec-linux-amd64 /usr/local/bin/tfsec
+
+      - name: Run tfsec
+        run: tfsec .
