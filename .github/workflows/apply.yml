@@ -1,9 +1,6 @@
-name: Terraform Plan
+name: Terraform Apply
 
 on:
-  push:
-    branches:
-      - "*"
   workflow_dispatch:
 
 permissions:
@@ -15,13 +12,24 @@ env:
   TF_VAR_region: eu-west-2
 
 jobs:
-  plan:
-    name: Terraform Plan
+  apply:
+    name: Terraform Apply
     runs-on: ubuntu-latest
+
+    needs: [plan]
+
+    environment:
+      name: Asli # Updated to use the Asli environment
+      url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Download Plan Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: tfplan
 
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v2
@@ -34,22 +42,9 @@ jobs:
         with:
           terraform_version: 1.5.6
 
-      - name: Terraform Format
-        run: terraform fmt -check
-
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Validate
-        run: terraform validate
-
-      - name: Terraform Plan
+      - name: Terraform Apply
         run: |
-          terraform plan -input=false -out=tfplan -var-file="terraform.tfvars"
-          echo "Terraform plan created."
-
-      - name: Upload Plan Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: tfplan
-          path: tfplan
+          terraform apply -input=false tfplan
