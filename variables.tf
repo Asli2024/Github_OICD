@@ -1,4 +1,4 @@
-variable "region" {
-  description = "The region in which the VPC will be created."
+variable "instance_type" {
+  description = "Instance type for the EC2 instance"
   type        = string
 }
