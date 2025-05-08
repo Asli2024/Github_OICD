@@ -25,14 +25,14 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Download Plan Artifact
-        uses: actions/download-artifact@v3.1.2
+        uses: actions/download-artifact@v3
         with:
           name: tfplan
 
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/Github_Role_Demo
+          role-to-assume: arn:aws:iam::175798131198:role/Github_Role_Demo
           aws-region: "eu-west-2"
 
       - name: Set up Terraform
