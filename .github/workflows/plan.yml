@@ -41,19 +41,20 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
+      - name: Verify tfplan existence
+        run: ls -alh
+
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v3
         with:
           name: tfplan
-          path: tfplan
+          path: ./tfplan
 
   apply:
     name: Terraform Apply
     runs-on: ubuntu-latest
 
-    environment:
-      name: Asli
-      url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    needs: plan
 
     steps:
       - name: Checkout code
@@ -63,6 +64,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: tfplan
+          path: ./
+
+      - name: Verify tfplan download
+        run: ls -alh
 
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v2
