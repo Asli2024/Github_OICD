@@ -1,4 +1,4 @@
-name: Terraform Plan
+name: Terraform Workflow
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
 env:
   AWS_REGION: eu-west-2
   TF_VAR_region: eu-west-2
-  AWS_ACCOUNT_ID: "175798131198" # Directly provided
+  AWS_ACCOUNT_ID: "175798131198"
 
 jobs:
   plan:
@@ -27,7 +27,7 @@ jobs:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::175798131198:role/Github_Role_Demo # Direct Account ID
+          role-to-assume: arn:aws:iam::175798131198:role/Github_Role_Demo
           aws-region: "eu-west-2"
 
       - name: Set up Terraform
@@ -35,8 +35,48 @@ jobs:
         with:
           terraform_version: 1.5.6
 
-      - name: Terraform Format
-        run: terraform fmt -check
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      - name: Upload Plan Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: tfplan
+          path: tfplan
+
+  apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+
+    environment:
+      name: Asli
+      url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Plan Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: tfplan
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::175798131198:role/Github_Role_Demo
+          aws-region: "eu-west-2"
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.6
 
       - name: Terraform Init
         run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -input=false tfplan
