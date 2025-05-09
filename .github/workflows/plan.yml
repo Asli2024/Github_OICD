@@ -22,10 +22,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # Explicitly defined version
+        uses: actions/checkout@v4
 
       - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v2 # Explicitly defined version
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::175798131198:role/Github_Role_Demo
           aws-region: eu-west-2
@@ -41,27 +41,24 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
-      - name: Verify tfplan existence
-        run: ls -alh
-
       - name: Upload Plan Artifact
-        uses: actions/upload-artifact@v3.1.2 # Explicit version to avoid caching issues
+        uses: actions/upload-artifact@v3
         with:
           name: tfplan
           path: ./tfplan
 
   apply:
     name: Terraform Apply
-    needs: plan
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' # Only run on manual trigger
+    needs: plan
+    if: github.event_name == 'workflow_dispatch' # Apply only on manual trigger
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Download Plan Artifact
-        uses: actions/download-artifact@v3.1.2 # Explicit version to avoid caching issues
+        uses: actions/download-artifact@v3
         with:
           name: tfplan
           path: ./
