@@ -24,6 +24,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Check Internet Access
+        run: curl -I https://github.com/actions/upload-artifact
+
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -52,9 +55,8 @@ jobs:
 
   apply:
     name: Terraform Apply
-    runs-on: ubuntu-latest
-
     needs: plan
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
