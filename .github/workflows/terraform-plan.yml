@@ -42,10 +42,18 @@ jobs:
           chmod +x /usr/local/bin/tfsec
           tfsec --version
 
-      - name: Run tfsec
+      - name: Run tfsec with tfvars
         run: |
-          echo "Running tfsec..."
-          tfsec .
+          echo "Running tfsec with tfvars..."
+
+          # Check if tfvars file exists
+          if [ -f "terraform.tfvars" ]; then
+            echo "tfvars file detected. Running with --tfvars-file..."
+            tfsec --tfvars-file=terraform.tfvars .
+          else
+            echo "No tfvars file detected. Running without --tfvars-file..."
+            tfsec .
+          fi
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
