@@ -1,0 +1,34 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Run tfsec
+        run: |
+          curl -sSL https://github.com/aquasecurity/tfsec/releases/download/v1.28.0/tfsec-linux-amd64 -o /usr/local/bin/tfsec
+          chmod +x /usr/local/bin/tfsec
+          tfsec .
+
+      - name: Run tflint
+        run: |
+          curl -sSL https://github.com/terraform-linters/tflint/releases/download/v0.47.0/tflint_linux_amd64.zip -o tflint.zip
+          unzip -o tflint.zip -d /usr/local/bin/
+          chmod +x /usr/local/bin/tflint
+          tflint --init
+          tflint
