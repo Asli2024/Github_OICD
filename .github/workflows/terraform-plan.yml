@@ -16,7 +16,7 @@ env:
 
 jobs:
   plan:
-    name: Terraform Plan
+    name: Terraform Plan with Security Checks
     runs-on: ubuntu-latest
 
     steps:
@@ -34,6 +34,14 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+
+      - name: Run tfsec
+        run: |
+          echo "Installing tfsec..."
+          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install.sh | bash
+
+          echo "Running tfsec..."
+          tfsec .
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
@@ -60,3 +68,8 @@ jobs:
 
           echo "artifact_id=$artifact_id" >> $GITHUB_ENV
           echo "branch_name=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Output Artifact ID and Branch Name
+        run: |
+          echo "Artifact ID: ${{ env.artifact_id }}"
+          echo "Branch Name: ${{ env.branch_name }}"
