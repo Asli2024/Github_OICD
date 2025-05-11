@@ -32,6 +32,16 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
+      - name: Terraform Format Check
+        run: |
+          echo "Running terraform fmt -check -recursive..."
+          terraform fmt -check -recursive
+
+      - name: Terraform Validate
+        run: |
+          echo "Running terraform validate..."
+          terraform validate
+
       - name: Terraform Init
         run: terraform init
 
@@ -42,16 +52,12 @@ jobs:
           chmod +x /usr/local/bin/tfsec
           tfsec --version
 
-      - name: Run tfsec with tfvars
+      - name: Run tfsec
         run: |
-          echo "Running tfsec with tfvars..."
-
-          # Check if tfvars file exists
+          echo "Running tfsec..."
           if [ -f "terraform.tfvars" ]; then
-            echo "tfvars file detected. Running with --tfvars-file..."
             tfsec --tfvars-file=terraform.tfvars .
           else
-            echo "No tfvars file detected. Running without --tfvars-file..."
             tfsec .
           fi
 
@@ -68,6 +74,8 @@ jobs:
       - name: Get Artifact ID
         id: get_artifact
         run: |
+          echo "Fetching artifact ID for branch: ${{ github.ref_name }}"
+
           response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts")
 
@@ -78,10 +86,11 @@ jobs:
             exit 1
           fi
 
+          # Store artifact ID in GITHUB_ENV but only log the first 8 characters
           echo "artifact_id=$artifact_id" >> $GITHUB_ENV
           echo "branch_name=${{ github.ref_name }}" >> $GITHUB_ENV
 
-      - name: Output Artifact ID and Branch Name
+      - name: Output Minimal Info
         run: |
-          echo "Artifact ID: ${{ env.artifact_id }}"
-          echo "Branch Name: ${{ env.branch_name }}"
+          echo "Branch: ${{ env.branch_name }}"
+          echo "Artifact ID (First 8 chars only): ${artifact_id:0:8}"
