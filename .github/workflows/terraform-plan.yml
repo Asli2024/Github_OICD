@@ -13,7 +13,7 @@ env:
 
 jobs:
   plan:
-    name: Terraform Init and Plan with Security Checks
+    name: Terraform Init and Plan
     runs-on: ubuntu-latest
 
     steps:
@@ -45,7 +45,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
-          path: ./tfplan
-
-      - name: Output Run ID
-        run: echo "PLAN_RUN_ID=${{ github.run_id }}" >> $GITHUB_ENV
+          path: tfplan
