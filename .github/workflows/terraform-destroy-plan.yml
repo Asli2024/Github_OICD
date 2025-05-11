@@ -1,4 +1,4 @@
-name: Terraform Destroy
+name: Terraform Destroy Plan
 
 on:
   workflow_dispatch:
@@ -8,9 +8,6 @@ on:
         required: true
       branch_name:
         description: "Branch to Destroy (e.g., main, dev)"
-        required: true
-      confirmation:
-        description: "Type 'DESTROY' to confirm"
         required: true
 
 permissions:
@@ -24,22 +21,13 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  destroy:
-    name: Terraform Destroy
+  destroy-plan:
+    name: Terraform Destroy Plan
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Verify Confirmation
-        id: verify_confirmation
-        run: |
-          if [ "${{ inputs.confirmation }}" != "DESTROY" ]; then
-            echo "Destruction not confirmed. Exiting..."
-            exit 1
-          fi
-          echo "Confirmation received. Proceeding with destruction."
 
       - name: Configure AWS Credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v2
@@ -60,17 +48,17 @@ jobs:
           echo "Validating Terraform..."
           terraform validate
 
-      - name: Terraform Plan (Preview Destroy)
+      - name: Generate Destroy Plan
         run: |
-          echo "Previewing Terraform Destroy..."
+          echo "Generating Terraform Destroy Plan..."
           terraform plan -destroy -out=destroy-plan
 
-      - name: Confirm Destruction
-        run: |
-          echo "To proceed with the destruction, type 'DESTROY' in the workflow input."
+      - name: Upload Destroy Plan Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: destroy-plan-${{ inputs.branch_name }}
+          path: destroy-plan
 
-      - name: Apply Terraform Destroy
-        if: ${{ inputs.confirmation == 'DESTROY' }}
+      - name: Output Confirmation
         run: |
-          echo "Applying Terraform Destroy..."
-          terraform apply -auto-approve destroy-plan
+          echo "Destroy plan generated for branch: ${{ inputs.branch_name }}"

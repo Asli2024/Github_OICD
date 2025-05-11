@@ -1,0 +1,85 @@
+name: Terraform Destroy Apply
+
+on:
+  workflow_dispatch:
+    inputs:
+      account_number:
+        description: "AWS Account Number"
+        required: true
+      branch_name:
+        description: "Branch to Apply the Destroy Plan"
+        required: true
+      confirmation:
+        description: "Type 'DESTROY' to confirm"
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+  actions: read
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  destroy-apply:
+    name: Terraform Destroy Apply
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify Confirmation
+        run: |
+          if [ "${{ inputs.confirmation }}" != "DESTROY" ]; then
+            echo "Destruction not confirmed. Exiting..."
+            exit 1
+          fi
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.account_number }}:role/Github_Role_Demo
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set Up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Fetch Destroy Plan Artifact
+        run: |
+          branch_name="${{ inputs.branch_name }}"
+          artifact_name="destroy-plan-$branch_name"
+
+          echo "Searching for destroy plan artifact: $artifact_name"
+
+          response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/artifacts")
+
+          artifact_id=$(echo "$response" | jq -r --arg name "$artifact_name" '.artifacts[] | select(.name == $name) | .id' | head -n 1)
+
+          if [ -z "$artifact_id" ]; then
+            echo "Error: No destroy plan found for branch $branch_name"
+            exit 1
+          fi
+
+          echo "artifact_id=$artifact_id" >> $GITHUB_ENV
+
+      - name: Download Destroy Plan
+        run: |
+          echo "Downloading destroy plan..."
+          curl -L -o destroy-plan.zip -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+               "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ env.artifact_id }}/zip"
+
+          unzip -o destroy-plan.zip || (echo "Failed to unzip destroy-plan.zip" && exit 1)
+          ls -l
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Apply Destroy Plan
+        run: |
+          echo "Applying Terraform Destroy Plan..."
+          terraform apply -auto-approve destroy-plan
