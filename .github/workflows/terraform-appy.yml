@@ -47,6 +47,7 @@ jobs:
           echo "Downloading artifact..."
           curl -L -o tfplan.zip -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ inputs.artifact_id }}/zip"
+          ls -l
           unzip tfplan.zip
           ls -l
 
