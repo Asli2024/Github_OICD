@@ -19,6 +19,9 @@ jobs:
     name: Terraform Plan
     runs-on: ubuntu-latest
 
+    outputs:
+      artifact_id: ${{ steps.upload.outputs.artifact_id }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -42,10 +45,8 @@ jobs:
         run: ls -l
 
       - name: Upload Plan Artifact
+        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
           path: tfplan
-
-      - name: Output Workflow Run ID
-        run: echo "PLAN_RUN_ID=${{ github.run_id }}" >> $GITHUB_ENV

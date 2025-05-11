@@ -3,8 +3,8 @@ name: Terraform Apply
 on:
   workflow_dispatch:
     inputs:
-      plan_run_id:
-        description: "Workflow Run ID of the Plan workflow"
+      artifact_id:
+        description: "Artifact ID of the Plan artifact"
         required: true
 
 permissions:
@@ -37,21 +37,17 @@ jobs:
 
       - name: Verify Artifact Details
         run: |
-          echo "Run ID: ${{ inputs.plan_run_id }}"
-          echo "Listing artifacts for run ID:"
+          echo "Artifact ID: ${{ inputs.artifact_id }}"
+          echo "Fetching artifact details:"
           curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-               "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ inputs.plan_run_id }}/artifacts"
+               "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ inputs.artifact_id }}"
 
       - name: Download Plan Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: tfplan
-          path: .
-          run-id: ${{ inputs.plan_run_id }}
-
-      - name: Verify Plan File
         run: |
-          echo "Listing files in the working directory:"
+          echo "Downloading artifact..."
+          curl -L -o tfplan.zip -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+               "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ inputs.artifact_id }}/zip"
+          unzip tfplan.zip
           ls -l
 
       - name: Terraform Init
