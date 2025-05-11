@@ -34,9 +34,11 @@ jobs:
 
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
+        working-directory: ./Github_OICD
 
       - name: Terraform Validate
         run: terraform validate
+        working-directory: ./Github_OICD
 
       - name: Install tfsec
         run: |
@@ -45,11 +47,16 @@ jobs:
       - name: Run tfsec
         run: tfsec ./Github_OICD
 
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./Github_OICD
+
       - name: Terraform Plan
         run: terraform plan -out=tfplan
+        working-directory: ./Github_OICD
 
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
-          path: tfplan
+          path: ./Github_OICD/tfplan
