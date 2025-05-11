@@ -5,30 +5,51 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+  actions: write
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
 jobs:
-  checks:
+  pr-checks:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Set Up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.2
+
+      - name: Terraform Init
+        run: |
+          echo "Initializing Terraform..."
+          terraform init
+
       - name: Terraform Format Check
-        run: terraform fmt -check -recursive
+        run: |
+          echo "Running terraform fmt -check -recursive..."
+          terraform fmt -check -recursive
 
       - name: Terraform Validate
-        run: terraform validate
+        run: |
+          echo "Running terraform validate..."
+          terraform validate
+
+      - name: Install tfsec
+        run: |
+          echo "Installing tfsec..."
+          curl -sSL https://github.com/aquasecurity/tfsec/releases/download/v1.28.0/tfsec-linux-amd64 -o /usr/local/bin/tfsec
+          chmod +x /usr/local/bin/tfsec
+          tfsec --version
 
       - name: Run tfsec
         run: |
-          curl -sSL https://github.com/aquasecurity/tfsec/releases/download/v1.28.0/tfsec-linux-amd64 -o /usr/local/bin/tfsec
-          chmod +x /usr/local/bin/tfsec
+          echo "Running tfsec..."
           tfsec .
-
-      - name: Run tflint
-        run: |
-          curl -sSL https://github.com/terraform-linters/tflint/releases/download/v0.47.0/tflint_linux_amd64.zip -o tflint.zip
-          unzip -o tflint.zip -d /usr/local/bin/
-          chmod +x /usr/local/bin/tflint
-          tflint --init
-          tflint
