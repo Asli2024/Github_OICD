@@ -3,7 +3,7 @@ name: Terraform Plan
 on:
   push:
     branches:
-      - "**" # Runs on all branches
+      - "**"
 
 permissions:
   id-token: write
@@ -35,11 +35,15 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Run tfsec
+      - name: Install tfsec
         run: |
           echo "Installing tfsec..."
-          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install.sh | bash
+          curl -sSL https://github.com/aquasecurity/tfsec/releases/download/v1.28.0/tfsec-linux-amd64 -o /usr/local/bin/tfsec
+          chmod +x /usr/local/bin/tfsec
+          tfsec --version
 
+      - name: Run tfsec
+        run: |
           echo "Running tfsec..."
           tfsec .
 
