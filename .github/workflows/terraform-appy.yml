@@ -33,11 +33,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: tfplan
-          path: ./Github_OICD
+          path: .
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./Github_OICD
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve ./Github_OICD/tfplan
+        run: terraform apply -auto-approve tfplan

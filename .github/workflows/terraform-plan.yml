@@ -34,29 +34,25 @@ jobs:
 
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
-        working-directory: ./Github_OICD
 
       - name: Terraform Validate
         run: terraform validate
-        working-directory: ./Github_OICD
 
       - name: Install tfsec
         run: |
           curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install.sh | bash
 
       - name: Run tfsec
-        run: tfsec ./Github_OICD
+        run: tfsec .
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./Github_OICD
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
-        working-directory: ./Github_OICD
 
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
-          path: ./Github_OICD/tfplan
+          path: tfplan
