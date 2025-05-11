@@ -10,6 +10,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  actions: read  # Correct permission to access artifacts
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -57,4 +58,4 @@ jobs:
         run: terraform init
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        ru
