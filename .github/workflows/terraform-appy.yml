@@ -35,7 +35,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Debug Artifact Download
+      - name: Debug Artifact Listing
         run: |
           echo "Workflow Run ID: ${{ inputs.plan_run_id }}"
           echo "Listing artifacts for the specified run ID:"
@@ -45,7 +45,7 @@ jobs:
       - name: Download Plan Artifact
         uses: actions/download-artifact@v4
         with:
-          name: tfplan
+          name: tfplan # Ensure this matches the upload step
           path: .
           run-id: ${{ inputs.plan_run_id }}
 
