@@ -2,6 +2,10 @@ name: Terraform Apply
 
 on:
   workflow_dispatch:
+    inputs:
+      plan_run_id:
+        description: "The run ID of the Terraform Plan workflow"
+        required: true
 
 permissions:
   id-token: write
@@ -34,6 +38,7 @@ jobs:
         with:
           name: tfplan
           path: .
+          run-id: ${{ inputs.plan_run_id }}
 
       - name: Terraform Init
         run: terraform init

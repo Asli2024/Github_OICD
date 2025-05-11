@@ -1,9 +1,6 @@
 name: Terraform Plan
 
 on:
-  push:
-    branches:
-      - "*"
   workflow_dispatch:
 
 permissions:
@@ -48,4 +45,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
-          path: .
+          path: ./tfplan
+
+      - name: Output Run ID
+        run: echo "PLAN_RUN_ID=${{ github.run_id }}" >> $GITHUB_ENV
