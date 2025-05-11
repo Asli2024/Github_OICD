@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       artifact_id:
-        description: "Artifact ID of the Plan artifact"
+        description: "Artifact ID of the tfplan artifact"
         required: true
 
 permissions:
@@ -35,10 +35,9 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Verify Artifact Details
+      - name: Verify Artifact
         run: |
           echo "Artifact ID: ${{ inputs.artifact_id }}"
-          echo "Fetching artifact details:"
           curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ inputs.artifact_id }}"
 
