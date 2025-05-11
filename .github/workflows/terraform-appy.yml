@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       plan_run_id:
-        description: "The run ID of the Terraform Plan workflow"
+        description: "Run ID of the Plan workflow"
         required: true
 
 permissions:
@@ -33,6 +33,13 @@ jobs:
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
+
+      - name: Debug Artifact Download
+        run: |
+          echo "Run ID: ${{ inputs.plan_run_id }}"
+          echo "Listing artifacts for the specified run ID:"
+          curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+               "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ inputs.plan_run_id }}/artifacts"
 
       - name: Download Plan Artifact
         uses: actions/download-artifact@v4
