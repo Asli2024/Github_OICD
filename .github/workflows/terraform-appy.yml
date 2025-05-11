@@ -35,17 +35,17 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Debug Artifact Listing
+      - name: Verify Artifact Details
         run: |
-          echo "Workflow Run ID: ${{ inputs.plan_run_id }}"
-          echo "Listing artifacts for the specified run ID:"
+          echo "Run ID: ${{ inputs.plan_run_id }}"
+          echo "Listing artifacts for run ID:"
           curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ inputs.plan_run_id }}/artifacts"
 
       - name: Download Plan Artifact
         uses: actions/download-artifact@v4
         with:
-          name: tfplan # Ensure this matches the upload step
+          name: tfplan
           path: .
           run-id: ${{ inputs.plan_run_id }}
 
