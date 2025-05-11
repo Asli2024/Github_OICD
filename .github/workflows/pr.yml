@@ -1,0 +1,61 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+  actions: write
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
+jobs:
+  pr-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/Github_Role_Demo
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set Up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.2
+
+      - name: Terraform Init
+        run: |
+          echo "Initializing Terraform..."
+          terraform init
+
+      - name: Terraform Format Check
+        run: |
+          echo "Running terraform fmt -check -recursive..."
+          terraform fmt -check -recursive
+
+      - name: Terraform Validate
+        run: |
+          echo "Running terraform validate..."
+          terraform validate
+
+      - name: Install tfsec
+        run: |
+          echo "Installing tfsec..."
+          curl -sSL https://github.com/aquasecurity/tfsec/releases/download/v1.28.0/tfsec-linux-amd64 -o /usr/local/bin/tfsec
+          chmod +x /usr/local/bin/tfsec
+          tfsec --version
+
+      - name: Run tfsec
+        run: |
+          echo "Running tfsec..."
+          tfsec .
