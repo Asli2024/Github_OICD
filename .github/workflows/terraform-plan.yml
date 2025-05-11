@@ -1,7 +1,9 @@
 name: Terraform Plan
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
   id-token: write
@@ -14,7 +16,7 @@ env:
 
 jobs:
   plan:
-    name: Terraform Init and Plan
+    name: Terraform Plan
     runs-on: ubuntu-latest
 
     steps:
@@ -36,15 +38,14 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
+      - name: List Files (Debugging)
+        run: ls -l
+
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
           path: tfplan
 
-      - name: Trigger Apply Workflow
-        run: |
-          curl -X POST -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/dispatches \
-            -d '{"event_type": "apply_trigger", "client_payload": {"plan_run_id": "${{ github.run_id }}"}}'
+      - name: Output Workflow Run ID
+        run: echo "PLAN_RUN_ID=${{ github.run_id }}" >> $GITHUB_ENV

@@ -1,8 +1,11 @@
 name: Terraform Apply
 
 on:
-  repository_dispatch:
-    types: [apply_trigger]
+  workflow_dispatch:
+    inputs:
+      plan_run_id:
+        description: "Workflow Run ID of the Plan workflow"
+        required: true
 
 permissions:
   id-token: write
@@ -32,16 +35,19 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Get Run ID from Event
+      - name: Debug Artifact Download
         run: |
-          echo "Run ID from Event: ${{ github.event.client_payload.plan_run_id }}"
+          echo "Workflow Run ID: ${{ inputs.plan_run_id }}"
+          echo "Listing artifacts for the specified run ID:"
+          curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+               "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ inputs.plan_run_id }}/artifacts"
 
       - name: Download Plan Artifact
         uses: actions/download-artifact@v4
         with:
           name: tfplan
           path: .
-          run-id: ${{ github.event.client_payload.plan_run_id }}
+          run-id: ${{ inputs.plan_run_id }}
 
       - name: Verify Plan File
         run: |
